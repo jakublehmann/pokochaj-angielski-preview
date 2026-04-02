@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokochaj angielski — Wireframe v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── TOKENS ──────────────────────────────────────────────────── */
+    :root {
+      --white:  #ffffff;
+      --off:    #f4f4f4;
+      --light:  #e8e8e8;
+      --mid:    #c0c0c0;
+      --border: #aaaaaa;
+      --muted:  #888888;
+      --sub:    #555555;
+      --dark:   #333333;
+      --ink:    #111111;
+      --black:  #000000;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Geist", system-ui, sans-serif;
+      background: var(--off);
+      color: var(--ink);
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+
+    .page-wrap { width: min(var(--max), calc(100% - 2.4rem)); margin: 0 auto; }
+
+    /* ── REVEAL ───────────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.vis { opacity: 1; transform: none; }
+
+    /* ── KICKER ───────────────────────────────────────────────────── */
+    .kicker {
+      font-size: .68rem; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── NAV ──────────────────────────────────────────────────────── */
+    .topbar {
+      position: sticky; top: .7rem; z-index: 40; margin-top: .85rem;
+      background: rgba(255,255,255,.94); backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      padding: .5rem .85rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      transition: box-shadow .25s, transform .3s ease, opacity .3s ease;
+    }
+    .topbar.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.1); }
+
+    .logo {
+      font-size: clamp(1rem, 1.4vw, 1.3rem); font-weight: 600;
+      color: var(--ink); text-decoration: none; letter-spacing: -.01em;
+    }
+
+    .menu { list-style: none; display: flex; gap: 0; }
+    .menu a {
+      text-decoration: none; color: var(--sub); font-size: .86rem; font-weight: 500;
+      padding: .42rem .78rem; transition: color .15s, background .15s;
+      display: block;
+    }
+    .menu a:hover { color: var(--ink); background: var(--light); }
+
+    /* ── BUTTONS ──────────────────────────────────────────────────── */
+    .btn {
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: .85rem; cursor: pointer;
+      transition: background .15s, color .15s, transform .15s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-ink {
+      background: var(--ink); color: #fff;
+      border: 1px solid var(--ink); padding: .62rem 1.1rem;
+    }
+    .btn-ink:hover { background: var(--black); }
+
+    .btn-ghost {
+      background: transparent; color: var(--ink);
+      border: 1px solid var(--ink); padding: .62rem 1.1rem;
+    }
+    .btn-ghost:hover { background: var(--ink); color: #fff; }
+
+    .btn-ghost-white {
+      background: transparent; color: #fff;
+      border: 1px solid rgba(255,255,255,.4); padding: .62rem 1.1rem;
+    }
+    .btn-ghost-white:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+
+    /* ── HERO ─────────────────────────────────────────────────────── */
+    .hero {
+      margin-top: clamp(1.2rem, 3.5vw, 2.4rem);
+      display: grid; grid-template-columns: 1.1fr .9fr;
+      gap: 1px; border: 1px solid var(--border);
+      background: var(--border);
+    }
+
+    .hero-copy {
+      background: var(--white);
+      padding: clamp(1.8rem, 4vw, 3.2rem);
+    }
+
+    .eyebrow {
+      display: inline-block; font-size: .68rem; font-weight: 700;
+      letter-spacing: .16em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: .28rem .65rem;
+      color: var(--sub); background: var(--off);
+      margin-bottom: 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4.6rem); font-weight: 700;
+      line-height: 1.0; letter-spacing: -.03em;
+      color: var(--ink); max-width: 10ch; margin-bottom: 1rem;
+    }
+
+    .lead {
+      font-size: clamp(.95rem, 1.4vw, 1.1rem); color: var(--sub);
+      max-width: 40ch; margin-bottom: 1.6rem; line-height: 1.65; font-weight: 400;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-bottom: 1rem; }
+    .hero-note { font-size: .78rem; color: var(--muted); font-weight: 400; }
+
+    .hero-side { background: var(--light); display: grid; grid-template-rows: 1fr auto; }
+
+    .img-placeholder {
+      background: var(--mid);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: .5rem; flex: 1;
+    }
+    .img-placeholder svg { width: 48px; height: 48px; stroke: var(--border); fill: none; stroke-width: 1.5; }
+    .img-placeholder span { font-size: .65rem; color: var(--border); letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+
+    .proof-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border); background: var(--white);
+    }
+    .proof {
+      padding: .9rem .7rem; text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .proof:last-child { border-right: none; }
+    .proof:hover { background: var(--off); }
+    .proof strong { display: block; font-size: 1.1rem; font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+    .proof span { font-size: .72rem; color: var(--muted); font-weight: 400; }
+
+    /* ── O MNIE — dark, 2-col: lewa=header+tekst, prawa=zdjęcie ─── */
+    .section-omnie {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      background: var(--ink);
+      border: 1px solid var(--ink);
+    }
+    .omnie-top {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; border-bottom: 1px solid #222;
+    }
+    .omnie-copy {
+      padding: clamp(2rem, 4.5vw, 3.5rem);
+      border-right: 1px solid #222;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .omnie-copy .kicker { color: #555; margin-bottom: .8rem; }
+    .omnie-copy h2 {
+      font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 700;
+      letter-spacing: -.03em; line-height: 1.0; color: #fff;
+      margin-bottom: 1.6rem;
+    }
+    .omnie-copy .omnie-sub {
+      font-size: .95rem; color: #888; line-height: 1.65; max-width: 44ch;
+    }
+    .omnie-photo {
+      background: #2a2a2a;
+      min-height: 340px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: .6rem;
+      position: relative; overflow: hidden;
+    }
+    /* subtle grid on photo placeholder */
+    .omnie-photo::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+    .omnie-photo svg { width: 52px; height: 52px; stroke: #444; fill: none; stroke-width: 1.5; position: relative; }
+    .omnie-photo span { font-size: .62rem; color: #444; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; position: relative; }
+
+    /* 4 stats strip at bottom */
+    .omnie-stats { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .omnie-stat {
+      padding: 1.4rem 1.2rem; border-right: 1px solid #222;
+      transition: background .2s;
+    }
+    .omnie-stat:last-child { border-right: none; }
+    .omnie-stat:hover { background: #1a1a1a; }
+    .stat-n {
+      font-size: 2rem; font-weight: 700; color: #2a2a2a;
+      letter-spacing: -.04em; line-height: 1; margin-bottom: .55rem;
+    }
+    .omnie-stat h3 { font-size: 1rem; font-weight: 600; color: #e0e0e0; margin-bottom: .35rem; }
+    .omnie-stat p { font-size: .82rem; color: #666; line-height: 1.55; }
+
+    /* ── JAK PRACUJE — vertical timeline ─────────────────────────── */
+    .section-method {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      border: 1px solid var(--border); background: var(--white);
+    }
+    .method-head {
+      padding: clamp(1.8rem, 3.5vw, 2.8rem);
+      border-bottom: 1px solid var(--border);
+    }
+    .method-head .kicker { margin-bottom: .5rem; }
+    .method-head h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700;
+      letter-spacing: -.03em; color: var(--ink); line-height: 1.05;
+    }
+
+    .method-steps { list-style: none; }
+    .method-step {
+      display: grid; grid-template-columns: 88px 1fr;
+      border-bottom: 1px solid var(--light);
+      transition: background .15s;
+    }
+    .method-step:last-child { border-bottom: none; }
+    .method-step:hover { background: var(--off); }
+
+    .step-num {
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem); font-weight: 700;
+      color: var(--mid); letter-spacing: -.03em; line-height: 1;
+      padding: clamp(1rem, 2.5vw, 1.8rem) 1rem clamp(1rem, 2.5vw, 1.8rem) clamp(1.5rem, 3vw, 2rem);
+      display: flex; align-items: center;
+      border-right: 1px solid var(--light);
+      transition: color .15s; overflow: hidden;
+    }
+    .method-step:hover .step-num { color: var(--dark); }
+
+    .step-body {
+      padding: clamp(1rem, 2.5vw, 1.8rem) clamp(1.5rem, 3vw, 2.5rem);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .step-body h3 { font-size: 1.15rem; font-weight: 600; color: var(--ink); margin-bottom: .35rem; }
+    .step-body p { font-size: .9rem; color: var(--sub); max-width: 52ch; line-height: 1.6; }
+
+    /* ── OFERTA — formaty zajec + pakiet ─────────────────────────── */
+    .section-offer {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      border: 1px solid var(--border); background: var(--off);
+    }
+    .offer-head {
+      padding: clamp(1.8rem, 3.5vw, 2.8rem);
+      border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2rem; align-items: end;
+    }
+    .offer-head-left .kicker { margin-bottom: .5rem; }
+    .offer-head-left h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 700;
+      letter-spacing: -.03em; color: var(--ink); line-height: 1.05;
+    }
+    .offer-head-right {
+      font-size: .9rem; color: var(--sub); line-height: 1.65;
+      align-self: end; padding-bottom: .1rem;
+    }
+
+    /* Format rows */
+    .offer-list { list-style: none; }
+    .offer-row {
+      display: grid; grid-template-columns: 2rem 1fr auto;
+      align-items: center; gap: 1.5rem;
+      padding: 1.2rem clamp(1.5rem, 3vw, 2.8rem);
+      border-bottom: 1px solid var(--border); background: var(--white);
+      transition: background .15s;
+    }
+    .offer-row:last-child { border-bottom: none; }
+    .offer-row:hover { background: var(--ink); }
+    .offer-row:hover .offer-title,
+    .offer-row:hover .offer-desc { color: #fff; }
+    .offer-row:hover .offer-price,
+    .offer-row:hover .price-note { color: var(--mid); }
+    .offer-row:hover .offer-idx { color: #444; }
+
+    .offer-row.featured-row { background: var(--ink); border-color: var(--ink); }
+    .offer-row.featured-row .offer-title { color: #fff; }
+    .offer-row.featured-row .offer-desc { color: #888; }
+    .offer-row.featured-row .offer-price { color: #fff; }
+    .offer-row.featured-row .price-note { color: #666; }
+    .offer-row.featured-row .offer-idx { color: #444; }
+    .offer-row.featured-row:hover { background: #1a1a1a; }
+
+    .offer-idx { font-size: .72rem; font-weight: 700; color: var(--mid); letter-spacing: .05em; }
+    .offer-body { min-width: 0; }
+    .offer-title { font-size: 1.1rem; font-weight: 600; color: var(--ink); margin-bottom: .2rem; }
+    .offer-desc { font-size: .84rem; color: var(--sub); line-height: 1.5; }
+    .offer-price {
+      font-size: 1rem; font-weight: 700; color: var(--ink);
+      white-space: nowrap; text-align: right;
+      font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+    }
+    .price-note { font-size: .7rem; font-weight: 400; color: var(--muted); display: block; margin-top: .1rem; }
+
+    /* Pakiet + Znajomy — 2-col strip */
+    .offer-extras {
+      border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .offer-extra {
+      padding: 1.4rem clamp(1.5rem, 3vw, 2.8rem);
+      display: flex; flex-direction: column; justify-content: space-between;
+      gap: .8rem; transition: background .15s;
+    }
+    .offer-extra:first-child { border-right: 1px solid var(--border); }
+    .offer-extra:hover { background: var(--light); }
+    .extra-label { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .25rem; }
+    .extra-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); margin-bottom: .2rem; letter-spacing: -.02em; }
+    .extra-desc { font-size: .84rem; color: var(--sub); line-height: 1.55; }
+    .extra-price { font-size: 1rem; font-weight: 700; color: var(--ink); white-space: nowrap; }
+    .extra-price .price-note { font-size: .7rem; font-weight: 400; color: var(--muted); display: block; margin-top: .1rem; }
+
+    /* ── OPINIE — sidebar + 2×2 grid ─────────────────────────────── */
+    .section-reviews {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      border: 1px solid var(--border); background: var(--white);
+    }
+    .reviews-layout { display: grid; grid-template-columns: 260px 1fr; }
+    .reviews-sidebar {
+      padding: clamp(1.8rem, 3.5vw, 2.8rem);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .reviews-sidebar .kicker { margin-bottom: .8rem; }
+    .reviews-sidebar h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700;
+      letter-spacing: -.03em; color: var(--ink); line-height: 1.05;
+      margin-bottom: auto;
+    }
+    .reviews-sidebar .review-total {
+      font-size: .75rem; color: var(--muted); margin-top: 2rem;
+      border-top: 1px solid var(--light); padding-top: 1rem;
+    }
+
+    .reviews-cards { display: grid; grid-template-columns: repeat(2, 1fr); }
+    .review-card {
+      padding: 1.4rem 1.3rem;
+      border-bottom: 1px solid var(--light);
+      border-right: 1px solid var(--light);
+      transition: background .15s;
+      display: flex; flex-direction: column;
+    }
+    .review-card:nth-child(even) { border-right: none; }
+    .review-card:nth-child(3),
+    .review-card:nth-child(4) { border-bottom: none; }
+    .review-card:hover { background: var(--off); }
+    .stars { font-size: .75rem; letter-spacing: .06em; color: var(--ink); margin-bottom: .65rem; }
+    .review-card q {
+      display: block; font-size: .88rem; color: var(--dark); line-height: 1.65;
+      flex: 1; margin-bottom: .9rem;
+    }
+    .review-card cite { font-style: normal; font-size: .72rem; color: var(--muted); font-weight: 500; }
+
+    /* ── FAQ — dark 2-col accordion ──────────────────────────────── */
+    .section-faq {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      background: #0d0d0d; border: 1px solid #000;
+    }
+    .faq-head {
+      padding: clamp(1.8rem, 3.5vw, 2.6rem);
+      border-bottom: 1px solid #222;
+    }
+    .faq-head .kicker { color: #444; margin-bottom: .4rem; }
+    .faq-head h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; color: #fff; letter-spacing: -.03em; }
+
+    .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
+    details {
+      border-bottom: 1px solid #1e1e1e; border-right: 1px solid #1e1e1e;
+      background: transparent; transition: background .15s;
+    }
+    details:hover { background: #151515; }
+    details:nth-child(even) { border-right: none; }
+    details:nth-last-child(-n+2) { border-bottom: none; }
+    summary {
+      list-style: none; cursor: pointer; font-weight: 500; font-size: .9rem;
+      color: #ccc; padding: 1.1rem clamp(1.2rem, 2.5vw, 2rem);
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+      transition: color .15s;
+    }
+    summary:hover { color: #fff; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "+"; font-size: 1.2rem; color: #444; flex-shrink: 0;
+      transition: transform .2s, color .2s;
+    }
+    details[open] summary { color: #fff; }
+    details[open] summary::after { transform: rotate(45deg); color: #888; }
+    details p {
+      padding: 0 clamp(1.2rem, 2.5vw, 2rem) 1.1rem;
+      color: #666; font-size: .86rem; line-height: 1.6; max-width: 54ch;
+    }
+
+    /* ── CTA ─────────────────────────────────────────────────────── */
+    .cta-section {
+      margin-top: clamp(2.4rem, 6vw, 5rem);
+      background: var(--ink); border: 1px solid var(--ink);
+      padding: clamp(2rem, 5vw, 3.5rem);
+    }
+    .cta-top { margin-bottom: 2rem; }
+    .cta-section h2 {
+      font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 700;
+      color: #fff; letter-spacing: -.03em; max-width: 18ch; margin-bottom: .7rem;
+    }
+    .cta-section .cta-sub { max-width: 52ch; color: #777; font-size: .9rem; line-height: 1.65; }
+    .cta-points { list-style: none; margin-top: 1.1rem; display: flex; flex-wrap: wrap; gap: .4rem; }
+    .cta-points li {
+      font-size: .72rem; color: #999; border: 1px solid #333;
+      padding: .25rem .6rem; font-weight: 500;
+      display: inline-flex; align-items: center; gap: .3rem;
+    }
+    .cta-points li::before { content: "—"; color: #555; }
+
+    .cta-buttons {
+      display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+      padding-top: 2rem; border-top: 1px solid #222;
+    }
+    .cta-button { font-size: .9rem; padding: .85rem 1.4rem; }
+    .cta-cal {
+      font-size: .9rem; padding: .85rem 1.4rem;
+      background: transparent; color: #fff;
+      border: 1px solid #333;
+      text-decoration: none; display: inline-flex; align-items: center;
+      gap: .5rem; font-weight: 600;
+      transition: border-color .15s, background .15s;
+    }
+    .cta-cal:hover { border-color: #fff; background: rgba(255,255,255,.06); }
+    .cta-cal svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* ── FOOTER ───────────────────────────────────────────────────── */
+    footer {
+      margin-top: 3rem; margin-bottom: 1.5rem;
+      color: var(--muted); font-size: .82rem;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+      border-top: 1px solid var(--border); padding-top: 1.2rem; gap: 1.5rem;
+    }
+    .footer-title { font-weight: 700; color: var(--ink); margin-bottom: .35rem; font-size: .9rem; }
+    .footer-col p { margin-bottom: .2rem; line-height: 1.6; }
+    .footer-col a { text-decoration: none; color: var(--sub); }
+    .footer-col a:hover { text-decoration: underline; color: var(--ink); }
+
+    /* ── MOBILE STICKY ────────────────────────────────────────────── */
+    .mobile-stick {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      background: rgba(255,255,255,.97); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: .65rem 1rem; display: none; gap: .55rem;
+    }
+    .mobile-stick .btn { flex: 1; padding: .72rem .8rem; }
+
+    .wf-mark {
+      position: fixed; bottom: .8rem; right: .8rem; z-index: 100;
+      font-size: .58rem; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--mid); font-weight: 700; pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────────── */
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-side { min-height: 320px; }
+      .omnie-top { grid-template-columns: 1fr; }
+      .omnie-photo { min-height: 260px; border-top: 1px solid #222; }
+      .omnie-copy { border-right: none; }
+      .omnie-stats { grid-template-columns: repeat(2, 1fr); }
+      .offer-head { grid-template-columns: 1fr; }
+      .offer-head-right { display: none; }
+      .reviews-layout { grid-template-columns: 1fr; }
+      .reviews-sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+      .menu { display: none; }
+      .cta-buttons, .footer-grid { grid-template-columns: 1fr; }
+      .footer-grid { display: grid; }
+    }
+
+    @media (max-width: 760px) {
+      body { padding-bottom: 70px; }
+      .page-wrap { width: calc(100% - 1rem); }
+      .omnie-stats { grid-template-columns: 1fr 1fr; }
+      .method-step { grid-template-columns: 64px 1fr; }
+      .offer-head { grid-template-columns: 1fr; }
+      .offer-head-right { display: none; }
+      .offer-row { grid-template-columns: 1fr auto; }
+      .offer-idx { display: none; }
+      .offer-extras { grid-template-columns: 1fr; }
+      .offer-extra:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+      .reviews-cards { grid-template-columns: 1fr; }
+      .review-card { border-right: none !important; }
+      .review-card:nth-child(3) { border-bottom: 1px solid var(--light) !important; }
+      .faq-grid { grid-template-columns: 1fr; }
+      details { border-right: none !important; }
+      details:nth-last-child(-n+2) { border-bottom: 1px solid #1e1e1e !important; }
+      details:last-child { border-bottom: none !important; }
+      .cta-buttons { flex-direction: column; }
+      .cta-button, .cta-cal { width: 100%; justify-content: center; }
+      .mobile-stick { display: flex; }
+      h1 { font-size: clamp(2.1rem, 10vw, 2.9rem); }
+    }
+  </style>
+</head>
+<body>
+
+<span class="wf-mark">Wireframe v2 — 02.04.26</span>
+
+<div class="page-wrap">
+
+  <!-- ── NAV ────────────────────────────────────────────────────── -->
+  <header class="topbar reveal" aria-label="Nawigacja glowna">
+    <a class="logo" href="#start">Pokochaj angielski</a>
+    <nav>
+      <ul class="menu">
+        <li><a href="#o-mnie">O mnie</a></li>
+        <li><a href="#jak-pracuje">Jak pracuje</a></li>
+        <li><a href="#oferta">Oferta</a></li>
+        <li><a href="#opinie">Opinie</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-ink" href="#kontakt">Zarezerwuj konsultacje</a>
+  </header>
+
+  <main>
+
+    <!-- ── HERO ──────────────────────────────────────────────────── -->
+    <section id="start" class="hero reveal" aria-labelledby="hero-title">
+      <article class="hero-copy">
+        <p class="eyebrow">Online 1:1 &nbsp;|&nbsp; Dla doroslych</p>
+        <h1 id="hero-title">Pokochaj angielski bez stresu.</h1>
+        <p class="lead">
+          Pracujesz z lektorka, ktora laczy profesjonalizm filologa
+          z empatycznym podejsciem. Uczysz sie mowic naturalnie i pewnie.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-ink" href="#kontakt">Zarezerwuj konsultacje</a>
+          <a class="btn btn-ghost" href="#oferta">Zobacz pakiety</a>
+        </div>
+        <p class="hero-note">Odpowiedz do 24h &nbsp;·&nbsp; wstepny plan nauki po pierwszym spotkaniu</p>
+      </article>
+
+      <aside class="hero-side" aria-label="Dowod wiarygodnosci">
+        <div class="img-placeholder" style="min-height:320px;">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span>Zdjecie — Lektorka</span>
+        </div>
+        <div class="proof-row">
+          <div class="proof"><strong>10+&nbsp;lat</strong><span>nauczania doroslych</span></div>
+          <div class="proof"><strong>1:1</strong><span>pelna personalizacja</span></div>
+          <div class="proof"><strong>100%</strong><span>regularny feedback</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ── O MNIE ─────────────────────────────────────────────────── -->
+    <section id="o-mnie" class="section-omnie reveal" aria-labelledby="o-mnie-title">
+      <div class="omnie-top">
+        <div class="omnie-copy">
+          <div>
+            <p class="kicker">O mnie</p>
+            <h2 id="o-mnie-title">Filolog, lektorka i osoba, ktora naprawde lubi uczyc doroslych.</h2>
+          </div>
+          <p class="omnie-sub">
+            Mam ponad 10 lat doswiadczenia w pracy z doroslymi. Wiem, ze nauka jezyka
+            to nie tylko gramatyka — to tez pewnosc siebie, rytm i metoda dopasowana do Ciebie.
+          </p>
+        </div>
+        <div class="omnie-photo">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span>Zdjecie — placeholder</span>
+        </div>
+      </div>
+      <div class="omnie-stats">
+        <div class="omnie-stat">
+          <div class="stat-n">10+</div>
+          <h3>Lat doswiadczenia</h3>
+          <p>Pracuje wylacznie z doroslymi — wiem, jakie bariery maja i jak je pokonac.</p>
+        </div>
+        <div class="omnie-stat">
+          <div class="stat-n">MA</div>
+          <h3>Filologia angielska</h3>
+          <p>Wyksztalcenie lingwistyczne i praktyczna wiedza o tym, jak dziala jezyk.</p>
+        </div>
+        <div class="omnie-stat">
+          <div class="stat-n">1:1</div>
+          <h3>Indywidualne lub w parach</h3>
+          <p>Kazda lekcja jest zaplanowana specjalnie dla Ciebie lub Waszej pary.</p>
+        </div>
+        <div class="omnie-stat">
+          <div class="stat-n">100%</div>
+          <h3>Online, bez stresu</h3>
+          <p>Uczysz sie z domu, we wlasnym rytmie, z pelnym wsparciem po kazdych zajeciach.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── JAK PRACUJE ────────────────────────────────────────────── -->
+    <section id="jak-pracuje" class="section-method reveal" aria-labelledby="metoda-title">
+      <header class="method-head">
+        <p class="kicker">Jak pracuje</p>
+        <h2 id="metoda-title">Prosty rytm, ktory daje widoczne efekty.</h2>
+      </header>
+      <ul class="method-steps">
+        <li class="method-step">
+          <span class="step-num">01</span>
+          <div class="step-body">
+            <h3>Diagnoza celu</h3>
+            <p>Ustalamy, gdzie i kiedy potrzebujesz angielskiego najbardziej.</p>
+          </div>
+        </li>
+        <li class="method-step">
+          <span class="step-num">02</span>
+          <div class="step-body">
+            <h3>Praktyka mowienia</h3>
+            <p>Skupiamy sie na komunikacji i wymowie, nie na teorii bez kontekstu.</p>
+          </div>
+        </li>
+        <li class="method-step">
+          <span class="step-num">03</span>
+          <div class="step-body">
+            <h3>Feedback po zajeciach</h3>
+            <p>Po kazdej lekcji dostajesz krotkie podsumowanie i zadania dopasowane do Ciebie.</p>
+          </div>
+        </li>
+        <li class="method-step">
+          <span class="step-num">04</span>
+          <div class="step-body">
+            <h3>Staly progres</h3>
+            <p>Co miesiac sprawdzamy postep i dopasowujemy plan do nowych potrzeb.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── OFERTA ─────────────────────────────────────────────────── -->
+    <section id="oferta" class="section-offer reveal" aria-labelledby="oferta-title">
+      <header class="offer-head">
+        <div class="offer-head-left">
+          <p class="kicker">Oferta</p>
+          <h2 id="oferta-title">Wybierz format, ktory pasuje do Twojego tempa zycia.</h2>
+        </div>
+        <div class="offer-head-right">
+          Zajecia indywidualne lub w parach, online.
+          Kazdy format mozna laczyc w pakiet 10 spotkan z rabatem 10%.
+        </div>
+      </header>
+      <ul class="offer-list">
+        <li class="offer-row">
+          <span class="offer-idx">01</span>
+          <div class="offer-body">
+            <p class="offer-title">Zajecia 30 min</p>
+            <p class="offer-desc">Krotka, intensywna sesja — idealna na regularne cwiczenie konwersacji.</p>
+          </div>
+          <div class="offer-price">
+            60 zl
+            <span class="price-note">za zajecia</span>
+          </div>
+        </li>
+        <li class="offer-row">
+          <span class="offer-idx">02</span>
+          <div class="offer-body">
+            <p class="offer-title">Zajecia 45 min</p>
+            <p class="offer-desc">Zbalansowany format — czas na konwersacje, gramatyke i feedback.</p>
+          </div>
+          <div class="offer-price">
+            100 zl
+            <span class="price-note">za zajecia</span>
+          </div>
+        </li>
+        <li class="offer-row featured-row">
+          <span class="offer-idx">03</span>
+          <div class="offer-body">
+            <p class="offer-title">Zajecia 60 min <span style="font-size:.62rem;color:#555;font-weight:400;margin-left:.5rem;letter-spacing:.1em;text-transform:uppercase;">Najpopularniejsze</span></p>
+            <p class="offer-desc">Pelna godzina — najwiecej czasu na praktyczne mowienie i utrwalenie materialu.</p>
+          </div>
+          <div class="offer-price">
+            120 zl
+            <span class="price-note">za zajecia</span>
+          </div>
+        </li>
+        <li class="offer-row">
+          <span class="offer-idx">04</span>
+          <div class="offer-body">
+            <p class="offer-title">Zajecia w parach (60 min)</p>
+            <p class="offer-desc">Nauka z partnerem lub znajomym — wygodna opcja dla dwoch osob w podobnym poziomie.</p>
+          </div>
+          <div class="offer-price">
+            160 zl
+            <span class="price-note">80 zl / osoba</span>
+          </div>
+        </li>
+      </ul>
+      <div class="offer-extras">
+        <div class="offer-extra">
+          <div>
+            <p class="extra-label">Pakiet</p>
+            <p class="extra-title">10 zajec — rabat 10%</p>
+            <p class="extra-desc">Kup pakiet 10 dowolnych zajec i oszczedz 10% na kazdym spotkaniu. Waznosc pakietu ustalamy indywidualnie.</p>
+          </div>
+          <div class="extra-price">
+            -10%
+            <span class="price-note">od ceny regularnej</span>
+          </div>
+        </div>
+        <div class="offer-extra">
+          <div>
+            <p class="extra-label">Dla znajomych</p>
+            <p class="extra-title">Zaproś znajomego — zgarnij darmowe zajecia</p>
+            <p class="extra-desc">Polec mnie osobie, ktora zacznie regularne lekcje, a Ty otrzymasz jedno zajecie gratis. Szczegoly do ustalenia.</p>
+          </div>
+          <div class="extra-price">
+            Gratis
+            <span class="price-note">1 zajecia za polecenie</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── OPINIE ─────────────────────────────────────────────────── -->
+    <section id="opinie" class="section-reviews reveal" aria-labelledby="opinie-title">
+      <div class="reviews-layout">
+        <aside class="reviews-sidebar">
+          <div>
+            <p class="kicker">Opinie klientow</p>
+            <h2 id="opinie-title">To nie sa puste obietnice. To realne zmiany.</h2>
+          </div>
+          <p class="review-total">4 opinie &nbsp;·&nbsp; ★★★★★ 5.0</p>
+        </aside>
+        <div class="reviews-cards">
+          <article class="review-card">
+            <p class="stars">★★★★★</p>
+            <q>Po 3 miesiacach przestalam unikac spotkan po angielsku. Lekcje sa konkretne i bez niepotrzebnego spiecia.</q>
+            <cite>Agnieszka, UX Designer</cite>
+          </article>
+          <article class="review-card">
+            <p class="stars">★★★★★</p>
+            <q>Najlepsze jest to, ze po kazdej lekcji wiem, co mam robic dalej. W koncu mam system i spokoj.</q>
+            <cite>Mateusz, Programista</cite>
+          </article>
+          <article class="review-card">
+            <p class="stars">★★★★★</p>
+            <q>Mialam duzy opor przed mowieniem. Tutaj nie boje sie bledow i pierwszy raz czuje, ze to ma sens.</q>
+            <cite>Karolina, Psycholozka</cite>
+          </article>
+          <article class="review-card">
+            <p class="stars">★★★★★</p>
+            <q>Profesjonalnie i po ludzku. Duzo praktyki, zero nadecia, duzo wsparcia.</q>
+            <cite>Piotr, Project Manager</cite>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FAQ ───────────────────────────────────────────────────── -->
+    <section id="faq" class="section-faq reveal" aria-labelledby="faq-title">
+      <header class="faq-head">
+        <p class="kicker">FAQ</p>
+        <h2 id="faq-title">Najczestsze pytania przed startem.</h2>
+      </header>
+      <div class="faq-grid">
+        <details>
+          <summary>Czy lekcje sa tylko online?</summary>
+          <p>Tak, dzieki temu latwo laczysz nauke z praca i zyciem prywatnym, niezaleznie od miasta.</p>
+        </details>
+        <details>
+          <summary>Czy moge odwolac lub przelozyc spotkanie?</summary>
+          <p>Tak. Termin mozesz przelozyc zgodnie z zasadami pakietu. Wszystko jest jasno opisane.</p>
+        </details>
+        <details>
+          <summary>Jakie sa formy platnosci?</summary>
+          <p>Platnosc przelewem przed startem pakietu. Szczegoly ustalimy na konsultacji.</p>
+        </details>
+        <details>
+          <summary>Kiedy place za zajecia?</summary>
+          <p>Platnosc z gory, przed rozpoczeciem pakietu. Nie pobierama zaliczek za pojedyncze zajecia.</p>
+        </details>
+        <details>
+          <summary>W jakich dniach i godzinach odbywaja sie zajecia?</summary>
+          <p>Terminy ustalamy indywidualnie — dopasowujemy do Twojego grafiku, takze weekendy.</p>
+        </details>
+        <details>
+          <summary>Czy musze miec konkretny poziom, zeby zaczac?</summary>
+          <p>Nie. Pracuje z osobami na kazdym poziomie — od podstawowego do zaawansowanego.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── CTA ───────────────────────────────────────────────────── -->
+    <section id="kontakt" class="cta-section reveal" aria-labelledby="kontakt-title">
+      <div class="cta-top">
+        <h2 id="kontakt-title">Gotowa/y zaczac juz teraz?</h2>
+        <p class="cta-sub">Zarezerwuj konsultacje i sprawdz, jak moze wygladac nauka dopasowana do Ciebie: spokojna, konkretna i skuteczna.</p>
+        <ul class="cta-points">
+          <li>30-min konsultacja online</li>
+          <li>diagnoza potrzeb i celu</li>
+          <li>wstepny plan nauki</li>
+        </ul>
+      </div>
+      <div class="cta-buttons">
+        <a class="btn btn-ghost-white cta-button" href="mailto:kontakt@pokochajangielski.pl">
+          Napisz: kontakt@pokochajangielski.pl
+        </a>
+        <a class="cta-cal" href="#kontakt">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Zarezerwuj termin w kalendarzu
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <p class="footer-title">Pokochaj angielski</p>
+        <p>Empatia, profesjonalizm i autentyczne wsparcie w rozwoju jezykowym doroslych.</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title">Kontakt</p>
+        <p><a href="mailto:kontakt@pokochajangielski.pl">kontakt@pokochajangielski.pl</a></p>
+        <p>Instagram: @pokochaj.angielski</p>
+        <p>Facebook: Pokochaj angielski</p>
+      </div>
+      <div class="footer-col">
+        <p class="footer-title">Informacje</p>
+        <p>Polityka prywatnosci</p>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ── MOBILE STICKY ──────────────────────────────────────────── -->
+<div class="mobile-stick" aria-label="Szybkie akcje mobilne">
+  <a class="btn btn-ghost" href="#oferta">Oferta</a>
+  <a class="btn btn-ink" href="#kontakt">Umow konsultacje</a>
+</div>
+
+<script>
+  // Scroll reveal
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("vis"); obs.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+
+  // Nav: hidden by default on mobile, show on scroll up
+  const nav = document.querySelector(".topbar");
+  let lastY = window.scrollY;
+  let mobileNavHidden = false;
+
+  function updateNav() {
+    const currentY = window.scrollY;
+    const isMobile = window.innerWidth <= 1080;
+
+    if (isMobile) {
+      if (currentY > lastY && currentY > 80) {
+        // scrolling down — hide nav
+        nav.style.transform = "translateY(calc(-100% - 1.2rem))";
+        nav.style.opacity = "0";
+        mobileNavHidden = true;
+      } else {
+        // scrolling up — show nav
+        nav.style.transform = "translateY(0)";
+        nav.style.opacity = "1";
+        mobileNavHidden = false;
+      }
+    } else {
+      nav.style.transform = "";
+      nav.style.opacity = "";
+    }
+
+    nav.classList.toggle("scrolled", currentY > 20);
+    lastY = currentY;
+  }
+
+  window.addEventListener("scroll", updateNav, { passive: true });
+  window.addEventListener("resize", updateNav, { passive: true });
+</script>
+</body>
+</html>
