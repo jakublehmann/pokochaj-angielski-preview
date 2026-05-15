@@ -75,7 +75,10 @@ export default function Nav() {
             </ul>
           </nav>
 
-          <a href="#kontakt" className="nav-cta">Umów konsultację</a>
+          <div className="nav-actions">
+            <a href="#kontakt" className="nav-kontakt">Kontakt</a>
+            <a href="#kontakt" className="nav-cta">Umów konsultację</a>
+          </div>
         </div>
       </header>
 
@@ -128,6 +131,33 @@ export default function Nav() {
         }
         .nav-menu a:hover { color: var(--ink); }
 
+        .nav-actions {
+          display: flex;
+          align-items: center;
+          gap: .5rem;
+          flex-shrink: 0;
+        }
+
+        .nav-kontakt {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 0.85rem;
+          white-space: nowrap;
+          background: var(--amber);
+          color: #1c1714;
+          border: none;
+          padding: 0.5rem 1.15rem;
+          transition: background 0.15s;
+        }
+        .nav-kontakt:hover {
+          background: var(--amber-dark);
+          color: #fff;
+        }
+
         .nav-cta {
           flex-shrink: 0;
           display: inline-flex;
@@ -151,7 +181,7 @@ export default function Nav() {
           .nav-menu { display: none; }
         }
         @media (max-width: 640px) {
-          .nav-cta { display: none; }
+          .nav-actions { display: none; }
           .topbar-inner { padding: 0.6rem 1.25rem; }
         }
       `}</style>

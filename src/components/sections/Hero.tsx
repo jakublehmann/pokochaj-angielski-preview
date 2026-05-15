@@ -46,7 +46,7 @@ export default function Hero({ content }: Props) {
               fill
               style={{ objectFit: "cover", objectPosition: "top center" }}
               priority
-              quality={90}
+              quality={100}
               sizes="(max-width: 900px) 100vw, 50vw"
             />
           </div>

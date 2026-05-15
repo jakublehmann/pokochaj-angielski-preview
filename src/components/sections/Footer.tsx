@@ -37,8 +37,16 @@ export default function Footer({ content }: Props) {
                     {f.email ?? "kontakt@pokochajangielski.pl"}
                   </a>
                 </p>
-                <p>Instagram: {f.instagram ?? "@pokochaj.angielski"}</p>
-                <p>Facebook: {f.facebook ?? "Pokochaj angielski"}</p>
+                <p>
+                  <a href="https://www.instagram.com/pokochaj.angielski/" target="_blank" rel="noopener noreferrer">
+                    Instagram: {f.instagram ?? "@pokochaj.angielski"}
+                  </a>
+                </p>
+                <p>
+                  <a href="https://www.facebook.com/pokochajangielski" target="_blank" rel="noopener noreferrer">
+                    Facebook: {f.facebook ?? "Pokochaj angielski"}
+                  </a>
+                </p>
               </div>
             </div>
 

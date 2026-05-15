@@ -17,6 +17,26 @@ const DEFAULT_EXTRAS: OfferExtra[] = [
 
 const EXTRA_ROTATION = ["8.54deg", "-5.88deg"];
 
+function computePackage(price: string, priceNote: string) {
+  const mainMatch = price.match(/(\d+)/);
+  if (!mainMatch) return null;
+  const mainVal = parseInt(mainMatch[1], 10);
+  const pkgVal = Math.round(mainVal * 0.9);
+  const savePerSession = mainVal - pkgVal;
+  const saveTotal = savePerSession * 10;
+
+  const personMatch = priceNote.match(/(\d+)\s*zł\s*\/\s*osoba/i);
+  const pkgNote = personMatch
+    ? `${Math.round(parseInt(personMatch[1], 10) * 0.9)} zł/osoba`
+    : priceNote;
+
+  return {
+    price: `${pkgVal} zł`,
+    note: pkgNote,
+    savings: `${saveTotal} zł taniej`,
+  };
+}
+
 export default function OfferSection({ content, offers, extras }: Props) {
   const o = content.offer ?? {};
   const items  = offers.length > 0 ? offers     : DEFAULT_OFFERS;
@@ -47,32 +67,12 @@ export default function OfferSection({ content, offers, extras }: Props) {
                 alt="Iza — lektorka języka angielskiego"
                 fill
                 style={{ objectFit: "contain", objectPosition: "bottom center" }}
-                quality={90}
+                quality={100}
                 sizes="(max-width: 900px) 100vw, 33vw"
               />
             </div>
           </div>
         </div>
-
-        {/* ── Pricing rows ─────────────────────────────────────── */}
-        <ul className="offer-list">
-          {items.map((item, i) => (
-            <li key={item.id} className={`offer-row${item.is_featured ? " featured" : ""}`}>
-              <span className="offer-idx">{String(i + 1).padStart(2, "0")}</span>
-              <div className="offer-body">
-                <p className="offer-title">
-                  {item.duration}
-                  {item.is_featured && <span className="offer-badge">Najpopularniejsze</span>}
-                </p>
-                <p className="offer-desc">{item.description}</p>
-              </div>
-              <div className="offer-price">
-                <span className="offer-price-value">{item.price}</span>
-                <span className="offer-price-note">{item.price_note}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
 
         {/* ── Extras ───────────────────────────────────────────── */}
         <div className="offer-extras">
@@ -96,20 +96,58 @@ export default function OfferSection({ content, offers, extras }: Props) {
           ))}
         </div>
 
+        {/* ── Column headers ───────────────────────────────────── */}
+        <div className="offer-col-headers" aria-hidden="true">
+          <div className="offer-col-spacer" />
+          <div className="offer-col-spacer" />
+          <div className="offer-col-head">Pojedynczo</div>
+          <div className="offer-col-head offer-col-head-pkg">W pakiecie<br/>10 zajęć</div>
+        </div>
+
+        {/* ── Pricing rows ─────────────────────────────────────── */}
+        <ul className="offer-list">
+          {items.map((item, i) => {
+            const pkg = computePackage(item.price, item.price_note);
+            return (
+              <li key={item.id} className={`offer-row${item.is_featured ? " featured" : ""}`}>
+                <span className="offer-idx">{String(i + 1).padStart(2, "0")}</span>
+                <div className="offer-body">
+                  <p className="offer-title">
+                    {item.duration}
+                    {item.is_featured && <span className="offer-badge">Najpopularniejsze</span>}
+                  </p>
+                  <p className="offer-desc">{item.description}</p>
+                </div>
+                <div className="offer-price">
+                  <span className="offer-price-value">{item.price}</span>
+                  <span className="offer-price-note">{item.price_note}</span>
+                </div>
+                <div className="offer-price offer-price-pkg">
+                  {pkg && (
+                    <>
+                      <span className="offer-price-value">{pkg.price}</span>
+                      <span className="offer-price-note">{pkg.note}</span>
+                      <span className="offer-savings">{pkg.savings}</span>
+                    </>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
       </section>
 
       <style>{`
         /* ─── Section ─────────────────────────────────────────── */
         .offer-section {
-          /* padding-top tworzy cream-przestrzeń ponad headerem, w którą
-             wchodzi bleed zdjęcia — bez nachodzenia na sekcję "Jak pracuję" */
           padding-top: clamp(10rem, 15vw, 13.5rem);
           margin-top: clamp(1rem, 2vw, 2rem);
         }
 
         /* ─── Dark header ─────────────────────────────────────── */
         .offer-header {
-          background: #3b0d11;
+          background: #053536;
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           align-items: center;
@@ -162,13 +200,111 @@ export default function OfferSection({ content, offers, extras }: Props) {
           align-self: stretch;
         }
 
-        /* Bleed wrapper — wyrównana do dołu, wystaje ponad header */
         .offer-photo-bleed {
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
           height: 165%;
+        }
+
+        /* ─── Extras ──────────────────────────────────────────── */
+        .offer-extras {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          background: var(--cream);
+          border-top: 1px solid #e6dfd1;
+          border-bottom: 1px solid #c8bfb5;
+        }
+
+        .offer-extra {
+          padding: clamp(1.5rem, 2vw, 1.6rem) clamp(1.5rem, 3.5vw, 3.2rem);
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: .9rem;
+        }
+        .offer-extra:first-child {
+          border-right: 1px solid #c8bfb5;
+        }
+
+        .extra-label {
+          font-size: .875rem;
+          font-weight: 500;
+          letter-spacing: .04em;
+          text-transform: uppercase;
+          color: #888;
+          margin-bottom: .2rem;
+        }
+        .extra-title {
+          font-size: 1.25rem;
+          font-weight: 500;
+          color: #111;
+          line-height: 1.2;
+          letter-spacing: -.02em;
+          margin-bottom: .3rem;
+        }
+        .extra-desc {
+          font-size: 1rem;
+          color: #555;
+          line-height: 1.55;
+        }
+
+        .extra-badge-wrap {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transform: rotate(var(--rot, 0deg));
+          transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+          cursor: default;
+        }
+        .extra-badge-wrap:hover {
+          transform: rotate(calc(var(--rot, 0deg) + 4deg));
+        }
+        .extra-badge {
+          background: #e1d8c7;
+          padding: 1rem 1.5rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: .15rem;
+          min-width: 9.5rem;
+          text-align: center;
+        }
+        .extra-badge-value {
+          font-size: 1.5rem;
+          color: #111;
+          line-height: 1;
+        }
+        .extra-badge-note {
+          font-size: .875rem;
+          color: #888;
+          line-height: 1.3;
+        }
+
+        /* ─── Column headers ──────────────────────────────────── */
+        .offer-col-headers {
+          display: grid;
+          grid-template-columns: 2.25rem 1fr auto auto;
+          gap: clamp(1rem, 1.7vw, 1.7rem);
+          padding: .55rem clamp(1.5rem, 3.5vw, 3.2rem);
+          background: #ECEAE1;
+          border-bottom: 1px solid #c8bfb5;
+        }
+        .offer-col-spacer { }
+        .offer-col-head {
+          font-size: .72rem;
+          font-weight: 600;
+          letter-spacing: .07em;
+          text-transform: uppercase;
+          color: #555;
+          text-align: right;
+          white-space: nowrap;
+          line-height: 1.3;
+        }
+        .offer-col-head-pkg {
+          color: #053536;
+          min-width: 7rem;
         }
 
         /* ─── Pricing list ────────────────────────────────────── */
@@ -178,7 +314,7 @@ export default function OfferSection({ content, offers, extras }: Props) {
 
         .offer-row {
           display: grid;
-          grid-template-columns: 2.25rem 1fr auto;
+          grid-template-columns: 2.25rem 1fr auto auto;
           align-items: center;
           gap: clamp(1rem, 1.7vw, 1.7rem);
           padding: clamp(1.2rem, 1.6vw, 1.4rem) clamp(1.5rem, 3.5vw, 3.2rem);
@@ -241,79 +377,18 @@ export default function OfferSection({ content, offers, extras }: Props) {
           color: #000;
           margin-top: .1rem;
         }
-
-        /* ─── Extras ──────────────────────────────────────────── */
-        .offer-extras {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          background: var(--cream);
-          border-top: 1px solid #e6dfd1;
+        .offer-price-pkg {
+          min-width: 7rem;
+          padding-left: clamp(.5rem, 1vw, 1rem);
+          border-left: 1px solid #c8bfb5;
         }
-
-        .offer-extra {
-          padding: clamp(1.5rem, 2vw, 1.6rem) clamp(1.5rem, 3.5vw, 3.2rem);
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: .9rem;
-        }
-        .offer-extra:first-child {
-          border-right: 1px solid #c8bfb5;
-        }
-
-        .extra-label {
-          font-size: .875rem;
-          font-weight: 500;
-          letter-spacing: .04em;
-          text-transform: uppercase;
-          color: #888;
-          margin-bottom: .2rem;
-        }
-        .extra-title {
-          font-size: 1.25rem;
-          font-weight: 500;
-          color: #111;
-          line-height: 1.2;
-          letter-spacing: -.02em;
-          margin-bottom: .3rem;
-        }
-        .extra-desc {
-          font-size: 1rem;
-          color: #555;
-          line-height: 1.55;
-        }
-
-        /* Rotated badge */
-        .extra-badge-wrap {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          transform: rotate(var(--rot, 0deg));
-          transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-          cursor: default;
-        }
-        .extra-badge-wrap:hover {
-          transform: rotate(calc(var(--rot, 0deg) + 4deg));
-        }
-        .extra-badge {
-          background: #e1d8c7;
-          padding: 1rem 1.5rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: .15rem;
-          min-width: 9.5rem;
-          text-align: center;
-        }
-        .extra-badge-value {
-          font-size: 1.5rem;
-          color: #111;
-          line-height: 1;
-        }
-        .extra-badge-note {
-          font-size: .875rem;
-          color: #888;
-          line-height: 1.3;
+        .offer-savings {
+          display: block;
+          font-size: .7rem;
+          font-weight: 600;
+          color: #053536;
+          margin-top: .25rem;
+          letter-spacing: .01em;
         }
 
         /* ─── Responsive ──────────────────────────────────────── */
@@ -326,10 +401,16 @@ export default function OfferSection({ content, offers, extras }: Props) {
           .offer-header-desc { padding: 0 clamp(1.5rem, 3.5vw, 3.25rem) clamp(1rem, 2vw, 1.5rem); }
         }
         @media (max-width: 640px) {
-          .offer-row { grid-template-columns: 1fr auto; }
+          .offer-col-headers { grid-template-columns: 1fr auto auto; }
+          .offer-col-headers .offer-col-spacer:first-child { display: none; }
+          .offer-row { grid-template-columns: 1fr auto auto; }
           .offer-idx { display: none; }
           .offer-extras { grid-template-columns: 1fr; }
           .offer-extra:first-child { border-right: none; border-bottom: 1px solid #c8bfb5; }
+        }
+        @media (max-width: 480px) {
+          .offer-col-head-pkg { white-space: normal; min-width: 5.5rem; }
+          .offer-price-pkg { min-width: 5.5rem; }
         }
       `}</style>
     </>

@@ -22,7 +22,7 @@ export default function About({ content }: Props) {
               alt="Iza — lektorka języka angielskiego"
               fill
               style={{ objectFit: "cover", objectPosition: "center top" }}
-              quality={90}
+              quality={100}
               sizes="(max-width: 900px) 100vw, 50vw"
             />
           </div>

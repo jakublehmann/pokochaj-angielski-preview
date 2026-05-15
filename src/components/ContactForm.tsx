@@ -6,9 +6,18 @@ interface Props { email: string; calendlyUrl?: string }
 export default function ContactForm({ email, calendlyUrl }: Props) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaA] = useState(() => Math.ceil(Math.random() * 9));
+  const [captchaB] = useState(() => Math.ceil(Math.random() * 9));
+  const [captchaVal, setCaptchaVal] = useState("");
+  const [captchaErr, setCaptchaErr] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setCaptchaErr(false);
+    if (parseInt(captchaVal, 10) !== captchaA + captchaB) {
+      setCaptchaErr(true);
+      return;
+    }
     setLoading(true);
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form));
@@ -41,6 +50,24 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           aria-label="Treść wiadomości"
           className="cf-input cf-textarea"
         />
+        <div className="cf-captcha">
+          <label htmlFor="cf-captcha-input" className="cf-captcha-label">
+            Ile to {captchaA} + {captchaB}? <span aria-hidden="true">(weryfikacja antyspamowa)</span>
+          </label>
+          <input
+            id="cf-captcha-input"
+            type="number"
+            inputMode="numeric"
+            value={captchaVal}
+            onChange={e => { setCaptchaVal(e.target.value); setCaptchaErr(false); }}
+            placeholder="Odpowiedź"
+            className={`cf-input cf-captcha-input${captchaErr ? " cf-captcha-error" : ""}`}
+            required
+            aria-describedby={captchaErr ? "cf-captcha-err" : undefined}
+          />
+          {captchaErr && <p id="cf-captcha-err" className="cf-captcha-msg">Nieprawidłowa odpowiedź — spróbuj ponownie.</p>}
+        </div>
+
         <button type="submit" disabled={loading} className="cf-btn-submit">
           {loading ? "Otwieranie…" : "Napisz do mnie"}
         </button>
@@ -137,6 +164,22 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           transition: background .15s, transform .12s;
         }
         .cf-btn-cal:hover { background: #f5f3ee; transform: translateY(-1px); }
+
+        .cf-captcha {
+          display: flex; flex-direction: column; gap: 6px;
+        }
+        .cf-captcha-label {
+          font-size: .8rem; font-weight: 500; color: var(--ink-muted);
+        }
+        .cf-captcha-input {
+          height: 44px !important;
+        }
+        .cf-captcha-error {
+          border-color: #c0392b !important;
+        }
+        .cf-captcha-msg {
+          font-size: .78rem; color: #c0392b;
+        }
       `}</style>
     </>
   );
