@@ -96,14 +96,6 @@ export default function OfferSection({ content, offers, extras }: Props) {
           ))}
         </div>
 
-        {/* ── Column headers ───────────────────────────────────── */}
-        <div className="offer-col-headers" aria-hidden="true">
-          <div className="offer-col-spacer" />
-          <div className="offer-col-spacer" />
-          <div className="offer-col-head">Pojedynczo</div>
-          <div className="offer-col-head offer-col-head-pkg">W pakiecie<br/>10 zajęć</div>
-        </div>
-
         {/* ── Pricing rows ─────────────────────────────────────── */}
         <ul className="offer-list">
           {items.map((item, i) => {
@@ -121,15 +113,7 @@ export default function OfferSection({ content, offers, extras }: Props) {
                 <div className="offer-price">
                   <span className="offer-price-value">{item.price}</span>
                   <span className="offer-price-note">{item.price_note}</span>
-                </div>
-                <div className="offer-price offer-price-pkg">
-                  {pkg && (
-                    <>
-                      <span className="offer-price-value">{pkg.price}</span>
-                      <span className="offer-price-note">{pkg.note}</span>
-                      <span className="offer-savings">{pkg.savings}</span>
-                    </>
-                  )}
+                  {pkg && <span className="offer-pkg-inline">w pakiecie {pkg.price}</span>}
                 </div>
               </li>
             );
@@ -218,11 +202,16 @@ export default function OfferSection({ content, offers, extras }: Props) {
         }
 
         .offer-extra {
-          padding: clamp(1.5rem, 2vw, 1.6rem) clamp(1.5rem, 3.5vw, 3.2rem);
+          padding: clamp(1.2rem, 1.8vw, 1.5rem) clamp(1.5rem, 3.5vw, 3.2rem);
           display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: .9rem;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1.5rem;
+        }
+        .offer-extra-copy {
+          flex: 1;
+          min-width: 0;
         }
         .offer-extra:first-child {
           border-right: 1px solid #c8bfb5;
@@ -282,31 +271,6 @@ export default function OfferSection({ content, offers, extras }: Props) {
           line-height: 1.3;
         }
 
-        /* ─── Column headers ──────────────────────────────────── */
-        .offer-col-headers {
-          display: grid;
-          grid-template-columns: 2.25rem 1fr auto auto;
-          gap: clamp(1rem, 1.7vw, 1.7rem);
-          padding: .55rem clamp(1.5rem, 3.5vw, 3.2rem);
-          background: #ECEAE1;
-          border-bottom: 1px solid #c8bfb5;
-        }
-        .offer-col-spacer { }
-        .offer-col-head {
-          font-size: .72rem;
-          font-weight: 600;
-          letter-spacing: .07em;
-          text-transform: uppercase;
-          color: #555;
-          text-align: right;
-          white-space: nowrap;
-          line-height: 1.3;
-        }
-        .offer-col-head-pkg {
-          color: #053536;
-          min-width: 7rem;
-        }
-
         /* ─── Pricing list ────────────────────────────────────── */
         .offer-list {
           list-style: none;
@@ -314,7 +278,7 @@ export default function OfferSection({ content, offers, extras }: Props) {
 
         .offer-row {
           display: grid;
-          grid-template-columns: 2.25rem 1fr auto auto;
+          grid-template-columns: 2.25rem 1fr auto;
           align-items: center;
           gap: clamp(1rem, 1.7vw, 1.7rem);
           padding: clamp(1.2rem, 1.6vw, 1.4rem) clamp(1.5rem, 3.5vw, 3.2rem);
@@ -322,9 +286,11 @@ export default function OfferSection({ content, offers, extras }: Props) {
           transition: background .15s;
         }
         .offer-row:last-child { border-bottom: none; }
+        .offer-row:hover { background: #e0ddd5 !important; }
 
         .offer-row            { background: #eceae1; }
-        .offer-row:nth-child(3) { background: #d3cabd; }
+        .offer-row.featured   { background: #b5a898; }
+        .offer-row.featured:hover { background: #a3978a !important; }
 
         .offer-idx {
           font-size: .75rem;
@@ -377,18 +343,12 @@ export default function OfferSection({ content, offers, extras }: Props) {
           color: #000;
           margin-top: .1rem;
         }
-        .offer-price-pkg {
-          min-width: 7rem;
-          padding-left: clamp(.5rem, 1vw, 1rem);
-          border-left: 1px solid #c8bfb5;
-        }
-        .offer-savings {
+        .offer-pkg-inline {
           display: block;
-          font-size: .7rem;
-          font-weight: 600;
+          font-size: .75rem;
           color: #053536;
-          margin-top: .25rem;
-          letter-spacing: .01em;
+          font-weight: 500;
+          margin-top: .2rem;
         }
 
         /* ─── Responsive ──────────────────────────────────────── */
@@ -401,16 +361,11 @@ export default function OfferSection({ content, offers, extras }: Props) {
           .offer-header-desc { padding: 0 clamp(1.5rem, 3.5vw, 3.25rem) clamp(1rem, 2vw, 1.5rem); }
         }
         @media (max-width: 640px) {
-          .offer-col-headers { grid-template-columns: 1fr auto auto; }
-          .offer-col-headers .offer-col-spacer:first-child { display: none; }
-          .offer-row { grid-template-columns: 1fr auto auto; }
+          .offer-row { grid-template-columns: 1fr auto; }
           .offer-idx { display: none; }
           .offer-extras { grid-template-columns: 1fr; }
           .offer-extra:first-child { border-right: none; border-bottom: 1px solid #c8bfb5; }
-        }
-        @media (max-width: 480px) {
-          .offer-col-head-pkg { white-space: normal; min-width: 5.5rem; }
-          .offer-price-pkg { min-width: 5.5rem; }
+          .offer-extra { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
     </>

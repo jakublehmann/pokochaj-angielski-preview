@@ -1,36 +1,54 @@
 "use client";
 import { useState } from "react";
+import Script from "next/script";
+
+declare global {
+  interface Window {
+    grecaptcha: { getResponse: () => string; reset: () => void };
+  }
+}
 
 interface Props { email: string; calendlyUrl?: string }
 
 export default function ContactForm({ email, calendlyUrl }: Props) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [captchaA] = useState(() => Math.ceil(Math.random() * 9));
-  const [captchaB] = useState(() => Math.ceil(Math.random() * 9));
-  const [captchaVal, setCaptchaVal] = useState("");
   const [captchaErr, setCaptchaErr] = useState(false);
+
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setCaptchaErr(false);
-    if (parseInt(captchaVal, 10) !== captchaA + captchaB) {
+
+    if (!window.grecaptcha?.getResponse()) {
       setCaptchaErr(true);
       return;
     }
+
     setLoading(true);
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form));
-    const mailto = `mailto:${email}?subject=Zapytanie od ${data.name}&body=${encodeURIComponent(`Imię: ${data.name}\nEmail: ${data.email}\n\n${data.message}`)}`;
-    window.location.href = mailto;
-    setTimeout(() => { setSent(true); setLoading(false); }, 400);
+
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: data.name, email: data.email, message: data.message }),
+    });
+
+    setLoading(false);
+    if (res.ok) {
+      setSent(true);
+      form.reset();
+    }
   }
 
   return (
     <>
+      <Script src="https://www.google.com/recaptcha/api.js" strategy="lazyOnload" />
       <form onSubmit={handleSubmit} className="cf-form">
         {sent && (
-          <p className="cf-success">Otwarto Twój klient pocztowy. Wyślij wiadomość!</p>
+          <p className="cf-success">Wiadomość wysłana! Iza odezwie się wkrótce.</p>
         )}
         <input
           name="name" type="text" required
@@ -50,22 +68,15 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           aria-label="Treść wiadomości"
           className="cf-input cf-textarea"
         />
-        <div className="cf-captcha">
-          <label htmlFor="cf-captcha-input" className="cf-captcha-label">
-            Ile to {captchaA} + {captchaB}? <span aria-hidden="true">(weryfikacja antyspamowa)</span>
-          </label>
-          <input
-            id="cf-captcha-input"
-            type="number"
-            inputMode="numeric"
-            value={captchaVal}
-            onChange={e => { setCaptchaVal(e.target.value); setCaptchaErr(false); }}
-            placeholder="Odpowiedź"
-            className={`cf-input cf-captcha-input${captchaErr ? " cf-captcha-error" : ""}`}
-            required
-            aria-describedby={captchaErr ? "cf-captcha-err" : undefined}
-          />
-          {captchaErr && <p id="cf-captcha-err" className="cf-captcha-msg">Nieprawidłowa odpowiedź — spróbuj ponownie.</p>}
+
+        <div className="cf-captcha-wrap">
+          {siteKey
+            ? <div className="g-recaptcha" data-sitekey={siteKey} />
+            : <p className="cf-captcha-missing">⚠ Brak klucza reCAPTCHA — dodaj NEXT_PUBLIC_RECAPTCHA_SITE_KEY do .env.local</p>
+          }
+          {captchaErr && (
+            <p className="cf-captcha-err" role="alert">Potwierdź, że nie jesteś robotem.</p>
+          )}
         </div>
 
         <button type="submit" disabled={loading} className="cf-btn-submit">
@@ -129,6 +140,20 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           padding-top: 12px;
           resize: vertical;
         }
+
+        .cf-captcha-wrap { display: flex; flex-direction: column; gap: 6px; }
+        .cf-captcha-missing {
+          font-size: .78rem; color: #b45309;
+          background: #fef3c7;
+          padding: .5rem .75rem;
+          border: 1px solid #fcd34d;
+          border-radius: 4px;
+        }
+        .cf-captcha-err {
+          font-size: .78rem; color: #c0392b;
+          margin: 0;
+        }
+
         .cf-btn-submit {
           width: 100%; height: 52px;
           background: var(--amber);
@@ -164,22 +189,6 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           transition: background .15s, transform .12s;
         }
         .cf-btn-cal:hover { background: #f5f3ee; transform: translateY(-1px); }
-
-        .cf-captcha {
-          display: flex; flex-direction: column; gap: 6px;
-        }
-        .cf-captcha-label {
-          font-size: .8rem; font-weight: 500; color: var(--ink-muted);
-        }
-        .cf-captcha-input {
-          height: 44px !important;
-        }
-        .cf-captcha-error {
-          border-color: #c0392b !important;
-        }
-        .cf-captcha-msg {
-          font-size: .78rem; color: #c0392b;
-        }
       `}</style>
     </>
   );

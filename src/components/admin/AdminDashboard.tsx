@@ -47,6 +47,7 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
   const [steps, setSteps] = useState<MethodStep[]>(initSteps);
   const [reviews, setReviews] = useState<Review[]>(initReviews);
   const [faqs, setFaqs] = useState<FaqItem[]>(initFaqs);
+  const [deletedFaqIds, setDeletedFaqIds] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -77,8 +78,14 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
     if (tab === "reviews" && reviews.length > 0) {
       await supabase.from("reviews").upsert(reviews, { onConflict: "id" });
     }
-    if (tab === "faq" && faqs.length > 0) {
-      await supabase.from("faq_items").upsert(faqs, { onConflict: "id" });
+    if (tab === "faq") {
+      if (deletedFaqIds.length > 0) {
+        await supabase.from("faq_items").delete().in("id", deletedFaqIds);
+        setDeletedFaqIds([]);
+      }
+      if (faqs.length > 0) {
+        await supabase.from("faq_items").upsert(faqs, { onConflict: "id" });
+      }
     }
 
     setSaved(true);
@@ -236,11 +243,32 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
               <Divider label="Pytania i odpowiedzi" />
               {faqs.map((faq, i) => (
                 <div key={faq.id} style={{ marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #eee" }}>
-                  <Field label={`Pytanie ${i + 1}`} value={faq.question} onChange={(v) => setFaqs((prev) => prev.map((f, idx) => idx === i ? { ...f, question: v } : f))} />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ".5rem" }}>
+                    <p style={{ fontSize: ".72rem", fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: ".1em" }}>Pytanie {i + 1}</p>
+                    <button
+                      onClick={() => {
+                        setDeletedFaqIds((prev) => [...prev, faq.id]);
+                        setFaqs((prev) => prev.filter((_, idx) => idx !== i));
+                      }}
+                      style={{ background: "transparent", border: "1px solid #e0e0e0", color: "#c00", padding: ".25rem .6rem", fontSize: ".75rem", cursor: "pointer", fontWeight: 600 }}
+                    >
+                      Usuń
+                    </button>
+                  </div>
+                  <Field label="Pytanie" value={faq.question} onChange={(v) => setFaqs((prev) => prev.map((f, idx) => idx === i ? { ...f, question: v } : f))} />
                   <Field label="Odpowiedź" value={faq.answer} onChange={(v) => setFaqs((prev) => prev.map((f, idx) => idx === i ? { ...f, answer: v } : f))} multiline />
                 </div>
               ))}
-              {faqs.length === 0 && <p style={{ color: "#888", fontSize: ".85rem" }}>Brak pytań — dodaj dane przez SQL schema.</p>}
+              {faqs.length === 0 && <p style={{ color: "#888", fontSize: ".85rem", marginBottom: "1rem" }}>Brak pytań — dodaj pierwsze poniżej.</p>}
+              <button
+                onClick={() => {
+                  const maxOrder = faqs.length > 0 ? Math.max(...faqs.map((f) => f.sort_order)) : 0;
+                  setFaqs((prev) => [...prev, { id: crypto.randomUUID(), sort_order: maxOrder + 1, question: "", answer: "" }]);
+                }}
+                style={{ background: "#111", color: "#fff", border: "none", padding: ".55rem 1.1rem", fontSize: ".82rem", fontWeight: 600, cursor: "pointer", marginTop: ".5rem" }}
+              >
+                + Dodaj pytanie
+              </button>
             </Section>
           )}
 

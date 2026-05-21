@@ -13,7 +13,7 @@ export default function Hero({ content }: Props) {
         <div className="hero-copy">
           <div className="hero-eyebrow-outer">
             <div className="hero-eyebrow-inner">
-              <span className="hero-eyebrow-text">Online 1:1 &nbsp;|&nbsp; Dla dorosłych</span>
+              <span className="hero-eyebrow-text">Online 1:1 &nbsp;|&nbsp; Dla dorosłych &nbsp;|&nbsp; Dla par</span>
             </div>
           </div>
 

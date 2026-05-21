@@ -72,11 +72,11 @@ export default function Nav() {
               <li><a href="#oferta">Oferta</a></li>
               <li><a href="#opinie">Opinie</a></li>
               <li><a href="#faq">FAQ</a></li>
+              <li><a href="#kontakt">Kontakt</a></li>
             </ul>
           </nav>
 
           <div className="nav-actions">
-            <a href="#kontakt" className="nav-kontakt">Kontakt</a>
             <a href="#kontakt" className="nav-cta">Umów konsultację</a>
           </div>
         </div>
@@ -138,27 +138,7 @@ export default function Nav() {
           flex-shrink: 0;
         }
 
-        .nav-kontakt {
-          flex-shrink: 0;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.85rem;
-          white-space: nowrap;
-          background: var(--amber);
-          color: #1c1714;
-          border: none;
-          padding: 0.5rem 1.15rem;
-          transition: background 0.15s;
-        }
-        .nav-kontakt:hover {
-          background: var(--amber-dark);
-          color: #fff;
-        }
-
-        .nav-cta {
+.nav-cta {
           flex-shrink: 0;
           display: inline-flex;
           align-items: center;

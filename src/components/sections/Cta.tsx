@@ -17,7 +17,7 @@ export default function Cta({ content }: Props) {
           <p className="cta-lead">{c.subtext ?? "Zarezerwuj konsultację i sprawdź, jak może wyglądać nauka dopasowana do Ciebie: spokojna, konkretna i skuteczna."}</p>
         </div>
         <div className="cta-form-wrap">
-          <ContactForm email={c.email ?? "kontakt@pokochajangielski.pl"} calendlyUrl={c.calendly_url} />
+          <ContactForm email={c.email ?? "pokochajangielski@gmail.com"} calendlyUrl={c.calendly_url ?? "https://calendly.com/pokochajangielski"} />
         </div>
       </section>
 
