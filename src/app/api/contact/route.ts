@@ -26,10 +26,14 @@ export async function POST(req: NextRequest) {
   });
   const verify = await verifyRes.json();
   if (!verify.success) {
-    return NextResponse.json({ error: "Weryfikacja reCAPTCHA nie powiodła się." }, { status: 400 });
+    console.error("[contact] recaptcha verify failed:", verify);
+    return NextResponse.json(
+      { error: "Weryfikacja reCAPTCHA nie powiodła się.", reason: "captcha", detail: verify["error-codes"] ?? null },
+      { status: 400 }
+    );
   }
 
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: "Formularz kontaktowy <onboarding@resend.dev>",
     to: TO,
     replyTo: email,
@@ -38,8 +42,13 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "Błąd wysyłki." }, { status: 500 });
+    console.error("[contact] resend error:", error);
+    return NextResponse.json(
+      { error: "Błąd wysyłki.", reason: "email", detail: error.message ?? String(error) },
+      { status: 500 }
+    );
   }
 
+  console.log("[contact] sent ok:", data?.id);
   return NextResponse.json({ ok: true });
 }

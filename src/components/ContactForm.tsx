@@ -15,6 +15,7 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
   const [loading, setLoading] = useState(false);
   const [captchaErr, setCaptchaErr] = useState(false);
   const [sendErr, setSendErr] = useState(false);
+  const [errDetail, setErrDetail] = useState("");
 
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
@@ -22,6 +23,7 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
     e.preventDefault();
     setCaptchaErr(false);
     setSendErr(false);
+    setErrDetail("");
 
     const token = window.grecaptcha?.getResponse();
     if (!token) {
@@ -54,6 +56,12 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
       form.reset();
     } else {
       setSendErr(true);
+      try {
+        const body = await res.json();
+        setErrDetail(`[${body.reason ?? res.status}] ${typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail ?? body.error ?? "")}`);
+      } catch {
+        setErrDetail(`HTTP ${res.status}`);
+      }
     }
   }
 
@@ -65,7 +73,10 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
           <p className="cf-success">Wiadomość wysłana! Iza odezwie się wkrótce.</p>
         )}
         {sendErr && (
-          <p className="cf-senderr" role="alert">Nie udało się wysłać wiadomości. Spróbuj ponownie lub umów się przez Calendly.</p>
+          <p className="cf-senderr" role="alert">
+            Nie udało się wysłać wiadomości. Spróbuj ponownie lub umów się przez Calendly.
+            {errDetail && <><br /><span style={{ fontSize: ".7rem", opacity: .8 }}>Szczegóły: {errDetail}</span></>}
+          </p>
         )}
         <input
           name="name" type="text" required
