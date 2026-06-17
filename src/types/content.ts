@@ -41,6 +41,9 @@ export interface Review {
   quote: string;
   author: string;
   role: string;
+  avatar_url?: string | null;
+  date_label?: string | null;
+  rating?: number | null;
 }
 
 export interface FaqItem {

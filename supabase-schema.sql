@@ -53,8 +53,30 @@ create table if not exists reviews (
   quote text not null,
   author text not null,
   role text not null,
+  avatar_url text,
+  date_label text,
+  rating int not null default 5,
   updated_at timestamptz default now()
 );
+
+-- Migracja dla istniejących baz (bezpieczna, idempotentna):
+alter table reviews add column if not exists avatar_url text;
+alter table reviews add column if not exists date_label text;
+alter table reviews add column if not exists rating int not null default 5;
+
+-- Storage: bucket na awatary (publiczny odczyt, zapis dla zalogowanych)
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+create policy "public read avatars" on storage.objects
+  for select using (bucket_id = 'avatars');
+create policy "auth upload avatars" on storage.objects
+  for insert with check (bucket_id = 'avatars' and auth.role() = 'authenticated');
+create policy "auth update avatars" on storage.objects
+  for update using (bucket_id = 'avatars' and auth.role() = 'authenticated');
+create policy "auth delete avatars" on storage.objects
+  for delete using (bucket_id = 'avatars' and auth.role() = 'authenticated');
 
 -- 6. FAQ
 create table if not exists faq_items (
@@ -115,11 +137,13 @@ insert into offer_extras (sort_order, label, title, description, price, price_no
   (2, 'Dla znajomych', 'Zaproś znajomego — zgarnij darmowe zajęcia', 'Poleć mnie osobie, która zacznie regularne lekcje, a Ty otrzymasz jedno zajęcie gratis.', 'Gratis', '1 zajęcia za polecenie')
 on conflict do nothing;
 
-insert into reviews (sort_order, quote, author, role) values
-  (1, 'Po 3 miesiącach przestałam unikać spotkań po angielsku. Lekcje są konkretne i bez niepotrzebnego spięcia.', 'Agnieszka', 'UX Designer'),
-  (2, 'Najlepsze jest to, że po każdej lekcji wiem, co mam robić dalej. W końcu mam system i spokój.', 'Mateusz', 'Programista'),
-  (3, 'Miałam duży opór przed mówieniem. Tutaj nie boję się błędów i pierwszy raz czuję, że to ma sens.', 'Karolina', 'Psycholożka'),
-  (4, 'Profesjonalnie i po ludzku. Dużo praktyki, zero nadęcia, dużo wsparcia.', 'Piotr', 'Project Manager')
+insert into reviews (sort_order, quote, author, role, date_label, rating) values
+  (1, 'Po 3 miesiącach przestałam unikać spotkań po angielsku. Lekcje są konkretne i bez niepotrzebnego spięcia.', 'Agnieszka', 'UX Designer', '2 tygodnie temu', 5),
+  (2, 'Najlepsze jest to, że po każdej lekcji wiem, co mam robić dalej. W końcu mam system i spokój.', 'Mateusz', 'Programista', 'miesiąc temu', 5),
+  (3, 'Miałam duży opór przed mówieniem. Tutaj nie boję się błędów i pierwszy raz czuję, że to ma sens.', 'Karolina', 'Psycholożka', '3 tygodnie temu', 5),
+  (4, 'Profesjonalnie i po ludzku. Dużo praktyki, zero nadęcia, dużo wsparcia.', 'Piotr', 'Project Manager', '2 miesiące temu', 5),
+  (5, 'Wreszcie nauka skrojona pod mnie, a nie pod podręcznik. Czuję realny postęp z tygodnia na tydzień.', 'Natalia', 'Marketing Manager', 'tydzień temu', 5),
+  (6, 'Potrzebowałem angielskiego do pracy w międzynarodowym zespole. Po kilku miesiącach prowadzę spotkania bez stresu.', 'Tomasz', 'Team Lead', 'miesiąc temu', 5)
 on conflict do nothing;
 
 insert into faq_items (sort_order, question, answer) values
@@ -130,3 +154,32 @@ insert into faq_items (sort_order, question, answer) values
   (5, 'W jakich dniach i godzinach odbywają się zajęcia?', 'Terminy ustalamy indywidualnie — dopasowujemy do Twojego grafiku, także weekendy.'),
   (6, 'Czy muszę mieć konkretny poziom, żeby zacząć?', 'Nie. Pracuję z osobami na każdym poziomie — od podstawowego do zaawansowanego.')
 on conflict do nothing;
+
+-- ============================================================
+-- Opinie — gotowe zapytania do ręcznego zarządzania w SQL Editor
+-- (to samo robi panel admina — to alternatywa, gdy wolisz SQL)
+-- ============================================================
+
+-- DODAJ jedną opinię (sort_order = numer kolejności; im wyższy, tym dalej):
+insert into reviews (sort_order, quote, author, role, date_label, rating, avatar_url) values
+  (7, 'Treść opinii klienta.', 'Imię', 'Zawód / rola', '2 tygodnie temu', 5, null);
+
+-- DODAJ na koniec, automatycznie nadając kolejny sort_order:
+insert into reviews (sort_order, quote, author, role, date_label, rating)
+select coalesce(max(sort_order), 0) + 1,
+       'Treść opinii klienta.', 'Imię', 'Zawód / rola', '2 tygodnie temu', 5
+from reviews;
+
+-- USUŃ opinię po autorze:
+delete from reviews where author = 'Imię';
+
+-- USUŃ opinię po sort_order:
+delete from reviews where sort_order = 7;
+
+-- PODGLĄD wszystkich opinii (żeby znaleźć id / sort_order do usunięcia):
+select id, sort_order, author, role, rating, date_label from reviews order by sort_order;
+
+-- EDYTUJ istniejącą opinię (np. zmień ocenę / datę / zdjęcie):
+update reviews
+set rating = 5, date_label = 'miesiąc temu', avatar_url = 'https://...'
+where author = 'Imię';

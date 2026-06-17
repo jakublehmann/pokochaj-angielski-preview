@@ -13,7 +13,10 @@ export default function Hero({ content }: Props) {
         <div className="hero-copy">
           <div className="hero-eyebrow-outer">
             <div className="hero-eyebrow-inner">
-              <span className="hero-eyebrow-text">Online 1:1 &nbsp;|&nbsp; Dla dorosłych &nbsp;|&nbsp; Dla par</span>
+              <span className="hero-eyebrow-text">Online &nbsp;|&nbsp; Dla dorosłych</span>
+            </div>
+            <div className="hero-eyebrow-inner hero-eyebrow-inner-inv">
+              <span className="hero-eyebrow-text">Indywidualnie &nbsp;|&nbsp; W parach</span>
             </div>
           </div>
 
@@ -76,9 +79,10 @@ export default function Hero({ content }: Props) {
         /* Eyebrow — rotated badge */
         .hero-eyebrow-outer {
           display: inline-flex;
-          align-items: center;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1.25rem;
           margin-bottom: 1.5rem;
-          height: 44px;
           cursor: default;
         }
         .hero-eyebrow-inner {
@@ -86,11 +90,21 @@ export default function Hero({ content }: Props) {
           align-items: center;
           background: #e1d8c7;
           padding: .3rem .75rem;
-          transform: rotate(-4.98deg);
+          transform: rotate(-3deg);
           transition: transform .35s cubic-bezier(.34,1.56,.64,1);
         }
         .hero-eyebrow-outer:hover .hero-eyebrow-inner {
-          transform: rotate(-8deg);
+          transform: rotate(-4.5deg);
+        }
+        .hero-eyebrow-inner-inv {
+          background: #555;
+          transform: rotate(3deg);
+        }
+        .hero-eyebrow-inner-inv .hero-eyebrow-text {
+          color: #e1d8c7;
+        }
+        .hero-eyebrow-outer:hover .hero-eyebrow-inner-inv {
+          transform: rotate(4.5deg);
         }
         .hero-eyebrow-text {
           font-size: .875rem;

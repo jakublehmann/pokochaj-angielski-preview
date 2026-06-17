@@ -23,6 +23,17 @@ async function fetchContent(): Promise<{
   try {
     const supabase = await createClient();
 
+    // Guard against an unreachable / paused Supabase project: a hanging
+    // connection would otherwise block the whole request until the
+    // serverless function times out (504). Fail fast to the fallback.
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 3000): Promise<T> =>
+      Promise.race([
+        Promise.resolve(p),
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error("supabase timeout")), ms)
+        ),
+      ]);
+
     const [
       { data: rawContent },
       { data: offers },
@@ -30,14 +41,16 @@ async function fetchContent(): Promise<{
       { data: steps },
       { data: reviews },
       { data: faqs },
-    ] = await Promise.all([
-      supabase.from("site_content").select("section, key, value"),
-      supabase.from("offers").select("*").order("sort_order"),
-      supabase.from("offer_extras").select("*").order("sort_order"),
-      supabase.from("method_steps").select("*").order("sort_order"),
-      supabase.from("reviews").select("*").order("sort_order"),
-      supabase.from("faq_items").select("*").order("sort_order"),
-    ]);
+    ] = await withTimeout(
+      Promise.all([
+        supabase.from("site_content").select("section, key, value"),
+        supabase.from("offers").select("*").order("sort_order"),
+        supabase.from("offer_extras").select("*").order("sort_order"),
+        supabase.from("method_steps").select("*").order("sort_order"),
+        supabase.from("reviews").select("*").order("sort_order"),
+        supabase.from("faq_items").select("*").order("sort_order"),
+      ])
+    );
 
     const content: ContentMap = {};
     for (const row of rawContent ?? []) {

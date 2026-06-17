@@ -48,7 +48,9 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
   const [reviews, setReviews] = useState<Review[]>(initReviews);
   const [faqs, setFaqs] = useState<FaqItem[]>(initFaqs);
   const [deletedFaqIds, setDeletedFaqIds] = useState<string[]>([]);
+  const [deletedReviewIds, setDeletedReviewIds] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const router = useRouter();
   const supabase = createClient();
@@ -75,8 +77,14 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
       if (offers.length > 0) await supabase.from("offers").upsert(offers, { onConflict: "id" });
       if (extras.length > 0) await supabase.from("offer_extras").upsert(extras, { onConflict: "id" });
     }
-    if (tab === "reviews" && reviews.length > 0) {
-      await supabase.from("reviews").upsert(reviews, { onConflict: "id" });
+    if (tab === "reviews") {
+      if (deletedReviewIds.length > 0) {
+        await supabase.from("reviews").delete().in("id", deletedReviewIds);
+        setDeletedReviewIds([]);
+      }
+      if (reviews.length > 0) {
+        await supabase.from("reviews").upsert(reviews, { onConflict: "id" });
+      }
     }
     if (tab === "faq") {
       if (deletedFaqIds.length > 0) {
@@ -96,6 +104,26 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
   async function logout() {
     await supabase.auth.signOut();
     router.push("/admin/login");
+  }
+
+  async function uploadAvatar(review: Review, file: File) {
+    setUploadingId(review.id);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${review.id}-${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+      });
+      if (error) {
+        alert("Nie udało się wgrać zdjęcia: " + error.message);
+        return;
+      }
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      setReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, avatar_url: data.publicUrl } : r)));
+    } finally {
+      setUploadingId(null);
+    }
   }
 
   return (
@@ -222,18 +250,84 @@ export default function AdminDashboard({ content: initContent, offers: initOffer
           {tab === "reviews" && (
             <Section title="Opinie klientów">
               <Field label="Nagłówek sekcji" value={get("reviews", "headline")} onChange={(v) => setField("reviews", "headline", v)} />
-              <Divider label="Opinie (4 kafelki)" />
+              <Divider label={`Opinie (${reviews.length})`} />
               {reviews.map((rev, i) => (
                 <div key={rev.id} style={{ marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #eee" }}>
-                  <p style={{ fontSize: ".72rem", fontWeight: 700, color: "#888", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".1em" }}>Opinia {i + 1}</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ".5rem" }}>
+                    <p style={{ fontSize: ".72rem", fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: ".1em" }}>Opinia {i + 1}</p>
+                    <button
+                      onClick={() => {
+                        setDeletedReviewIds((prev) => [...prev, rev.id]);
+                        setReviews((prev) => prev.filter((_, idx) => idx !== i));
+                      }}
+                      style={{ background: "transparent", border: "1px solid #e0e0e0", color: "#c00", padding: ".25rem .6rem", fontSize: ".75rem", cursor: "pointer", fontWeight: 600 }}
+                    >
+                      Usuń
+                    </button>
+                  </div>
                   <Field label="Cytat" value={rev.quote} onChange={(v) => setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, quote: v } : r))} multiline />
                   <Row>
                     <Field label="Imię" value={rev.author} onChange={(v) => setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, author: v } : r))} />
                     <Field label="Rola/zawód" value={rev.role} onChange={(v) => setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, role: v } : r))} />
                   </Row>
+                  <Row>
+                    <Field label="Data (np. „2 tygodnie temu”)" value={rev.date_label ?? ""} onChange={(v) => setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, date_label: v } : r))} />
+                    <label style={s.field}>
+                      <span style={s.fieldLabel}>Liczba gwiazdek (1–5)</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={rev.rating ?? 5}
+                        onChange={(e) => {
+                          const n = Math.max(1, Math.min(5, Math.round(Number(e.target.value) || 5)));
+                          setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, rating: n } : r));
+                        }}
+                        style={s.input}
+                      />
+                    </label>
+                  </Row>
+                  <div style={s.field}>
+                    <span style={s.fieldLabel}>Zdjęcie / awatar</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+                      {rev.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={rev.avatar_url} alt="" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "1px solid #ddd" }} />
+                      ) : (
+                        <span style={{ width: 48, height: 48, borderRadius: "50%", background: "#eee", display: "grid", placeItems: "center", color: "#999", fontSize: ".75rem" }}>brak</span>
+                      )}
+                      <label style={{ background: "#fff", border: "1px solid #bbb", padding: ".4rem .8rem", fontSize: ".8rem", cursor: uploadingId === rev.id ? "wait" : "pointer", fontWeight: 600 }}>
+                        {uploadingId === rev.id ? "Wgrywanie…" : "Wgraj zdjęcie"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingId === rev.id}
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(rev, f); e.target.value = ""; }}
+                          style={{ display: "none" }}
+                        />
+                      </label>
+                      {rev.avatar_url && (
+                        <button
+                          onClick={() => setReviews((prev) => prev.map((r, idx) => idx === i ? { ...r, avatar_url: "" } : r))}
+                          style={{ background: "transparent", border: "none", color: "#c00", fontSize: ".78rem", cursor: "pointer", fontWeight: 600 }}
+                        >
+                          Usuń zdjęcie
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
-              {reviews.length === 0 && <p style={{ color: "#888", fontSize: ".85rem" }}>Brak opinii w bazie — dodaj dane przez SQL schema.</p>}
+              {reviews.length === 0 && <p style={{ color: "#888", fontSize: ".85rem", marginBottom: "1rem" }}>Brak opinii — dodaj pierwszą poniżej.</p>}
+              <button
+                onClick={() => {
+                  const maxOrder = reviews.length > 0 ? Math.max(...reviews.map((r) => r.sort_order)) : 0;
+                  setReviews((prev) => [...prev, { id: crypto.randomUUID(), sort_order: maxOrder + 1, quote: "", author: "", role: "", date_label: "", avatar_url: "", rating: 5 }]);
+                }}
+                style={{ background: "#111", color: "#fff", border: "none", padding: ".55rem 1.1rem", fontSize: ".82rem", fontWeight: 600, cursor: "pointer", marginTop: ".5rem" }}
+              >
+                + Dodaj opinię
+              </button>
             </Section>
           )}
 
