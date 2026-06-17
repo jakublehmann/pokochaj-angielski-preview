@@ -14,14 +14,17 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [captchaErr, setCaptchaErr] = useState(false);
+  const [sendErr, setSendErr] = useState(false);
 
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setCaptchaErr(false);
+    setSendErr(false);
 
-    if (!window.grecaptcha?.getResponse()) {
+    const token = window.grecaptcha?.getResponse();
+    if (!token) {
       setCaptchaErr(true);
       return;
     }
@@ -30,16 +33,27 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form));
 
-    const res = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: data.name, email: data.email, message: data.message }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, email: data.email, message: data.message, recaptchaToken: token }),
+      });
+    } catch {
+      setLoading(false);
+      setSendErr(true);
+      window.grecaptcha?.reset();
+      return;
+    }
 
     setLoading(false);
+    window.grecaptcha?.reset();
     if (res.ok) {
       setSent(true);
       form.reset();
+    } else {
+      setSendErr(true);
     }
   }
 
@@ -49,6 +63,9 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
       <form onSubmit={handleSubmit} className="cf-form">
         {sent && (
           <p className="cf-success">Wiadomość wysłana! Iza odezwie się wkrótce.</p>
+        )}
+        {sendErr && (
+          <p className="cf-senderr" role="alert">Nie udało się wysłać wiadomości. Spróbuj ponownie lub umów się przez Calendly.</p>
         )}
         <input
           name="name" type="text" required
@@ -152,6 +169,13 @@ export default function ContactForm({ email, calendlyUrl }: Props) {
         .cf-captcha-err {
           font-size: .78rem; color: #c0392b;
           margin: 0;
+        }
+        .cf-senderr {
+          font-size: .82rem; color: #c0392b;
+          background: #fdecea;
+          padding: .55rem .85rem;
+          border: 1px solid #f5c6c0;
+          border-radius: 4px;
         }
 
         .cf-btn-submit {
