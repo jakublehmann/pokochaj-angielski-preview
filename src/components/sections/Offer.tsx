@@ -357,7 +357,8 @@ export default function OfferSection({ content, offers, extras }: Props) {
             grid-template-columns: 1fr;
             grid-template-rows: auto auto auto;
           }
-          .offer-header-photo { min-height: 240px; }
+          .offer-header-photo { min-height: 340px; }
+          .offer-photo-bleed { position: relative; height: 100%; }
           .offer-header-desc { padding: 0 clamp(1.5rem, 3.5vw, 3.25rem) clamp(1rem, 2vw, 1.5rem); }
         }
         @media (max-width: 640px) {

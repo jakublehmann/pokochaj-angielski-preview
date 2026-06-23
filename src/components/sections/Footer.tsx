@@ -55,8 +55,8 @@ export default function Footer({ content }: Props) {
           <div className="footer-divider" />
 
           <div className="footer-bottom">
-            <p>© {year} Pokochaj Angielski</p>
-            <p>Pokochaj Angielski. All Rights Reserved.</p>
+            <p>© {year} Pokochaj angielski - Izabela Ampulska</p>
+            <p>Pokochaj angielski - Izabela Ampulska. All Rights Reserved.</p>
           </div>
 
         </div>
