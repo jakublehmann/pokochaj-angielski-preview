@@ -33,8 +33,8 @@ export default function Footer({ content }: Props) {
               <p className="footer-contact-head">Kontakt</p>
               <div className="footer-contact-list">
                 <p>
-                  <a href={`mailto:${f.email ?? "kontakt@pokochajangielski.pl"}`}>
-                    {f.email ?? "kontakt@pokochajangielski.pl"}
+                  <a href={`mailto:${f.email ?? "kontakt@pokochajangielski.com"}`}>
+                    {f.email ?? "kontakt@pokochajangielski.com"}
                   </a>
                 </p>
                 <p>
